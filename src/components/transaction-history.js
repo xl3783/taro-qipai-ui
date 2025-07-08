@@ -5,7 +5,7 @@ import { useState } from 'react'
 import PlayerAvatar from "./player-avatar"
 
 export default function TransactionHistory({ transactions, players }) {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(true)
 
   const getPlayerName = (playerId) => {
     return players.find((p) => p.id === playerId)?.name || "未知用户"
@@ -40,15 +40,15 @@ export default function TransactionHistory({ transactions, players }) {
     }
   }
 
-  const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0)
+  const totalAmount = transactions ? transactions.reduce((sum, t) => sum + t.points, 0) : 0
 
   return (
     <View className='w-full rounded-lg border bg-card text-card-foreground shadow-sm'>
       <View className='p-4 border-b flex items-center justify-between'>
         <Text className='text-lg font-semibold'>
-          房间流水 <Text className='text-sm font-normal text-muted-foreground'>({transactions.length}笔)</Text>
+          房间流水 <Text className='text-sm font-normal text-muted-foreground'>({transactions ? transactions.length : 0}笔)</Text>
         </Text>
-        <View className='flex items-center space-x-2'>
+        <View className='flex items-center gap-2'>
           <Text className='text-sm text-muted-foreground'>总计: <Text className='font-semibold text-orange-600'>¥{totalAmount}</Text></Text>
           <Button className='h-8 w-8 p-0' onClick={() => setIsExpanded(!isExpanded)}>
             {isExpanded ? '收起' : '展开'}
@@ -64,31 +64,31 @@ export default function TransactionHistory({ transactions, players }) {
             </View>
           ) : (
             <View className='h-64 w-full overflow-y-auto'>
-              <View className='space-y-3'>
+              <View className='flex flex-col gap-3'>
                 {transactions.map((transaction) => (
-                  <View key={transaction.id} className='flex items-center justify-between p-3 bg-gray-50 rounded-lg mb-2'>
-                    <View className='flex items-center space-x-3 flex-1'>
-                      <View className='inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800'>
+                  <View key={transaction.id} className='flex items-center justify-between p-3 bg-gray-50 rounded-lg'>
+                    <View className='flex items-center gap-3 flex-1'>
+                      {/* <View className='inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800'>
                         {getTransactionTypeText(transaction.type)}
-                      </View>
-                      <View className='flex items-center space-x-2 flex-1'>
+                      </View> */}
+                      <View className='flex items-center gap-2 flex-1'>
                         <Text className='text-sm font-medium'>
-                          {transaction.fromPlayer ? transaction.fromPlayer.name : getPlayerName(transaction.fromPlayerId)}
+                          {transaction.fromPlayer?.username}
                         </Text>
                         <Text className='mx-1'>→</Text>
                         <Text className='text-sm font-medium'>
-                          {transaction.toPlayer ? transaction.toPlayer.name : getPlayerName(transaction.toPlayerId)}
+                          {transaction.toPlayer?.username}
                         </Text>
                       </View>
                     </View>
                     <View className='text-right flex-shrink-0'>
-                      <Text className='text-lg font-bold text-orange-600'>¥{transaction.amount}</Text>
-                      <Text className='text-xs text-muted-foreground'>
+                      <Text className='text-lg font-bold text-orange-600'>¥{transaction.points}</Text>
+                      {/* <Text className='text-xs text-muted-foreground'>
                         {formatDate(transaction.timestamp)} {formatTime(transaction.timestamp)}
-                      </Text>
-                      {transaction.description && (
+                      </Text> */}
+                      {/* {transaction.description && (
                         <Text className='text-xs text-gray-500 mt-1'>{transaction.description}</Text>
-                      )}
+                      )} */}
                     </View>
                   </View>
                 ))}
@@ -99,7 +99,7 @@ export default function TransactionHistory({ transactions, players }) {
             <View className='mt-4 pt-3 border-t'>
               <View className='flex justify-between items-center text-sm'>
                 <Text className='text-muted-foreground'>今日交易统计</Text>
-                <View className='space-x-4'>
+                <View className='flex gap-4'>
                   <Text>交易笔数: <Text className='font-semibold'>{transactions.length}</Text></Text>
                   <Text>交易总额: <Text className='font-semibold text-orange-600'>¥{totalAmount}</Text></Text>
                 </View>

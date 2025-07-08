@@ -219,6 +219,8 @@ page {
   margin-left: 16rpx;
 }
 
+/* 小程序不支持相邻兄弟选择器，注释掉 space-* 样式 */
+/* 
 .space-y-2 > * + * {
   margin-top: 8rpx;
 }
@@ -246,6 +248,51 @@ page {
 .space-x-4 > * + * {
   margin-left: 16rpx;
 }
+*/
+
+/* 小程序兼容的间距类 - 使用 gap 属性 */
+.gap-1 {
+  gap: 4rpx;
+}
+
+.gap-1_5 {
+  gap: 6rpx;
+}
+
+.gap-6 {
+  gap: 24rpx;
+}
+
+/* 小程序不支持通配符选择器和:not()伪类，注释掉这些样式 */
+/* 
+.children-mt-2 > *:not(:first-child) {
+  margin-top: 8rpx;
+}
+
+.children-mt-3 > *:not(:first-child) {
+  margin-top: 12rpx;
+}
+
+.children-mt-4 > *:not(:first-child) {
+  margin-top: 16rpx;
+}
+
+.children-mt-6 > *:not(:first-child) {
+  margin-top: 24rpx;
+}
+
+.children-ml-2 > *:not(:first-child) {
+  margin-left: 8rpx;
+}
+
+.children-ml-3 > *:not(:first-child) {
+  margin-left: 12rpx;
+}
+
+.children-ml-4 > *:not(:first-child) {
+  margin-left: 16rpx;
+}
+*/
 
 .gap-2 {
   gap: 8rpx;
@@ -509,9 +556,10 @@ button.bg-orange-500 {
   color: #ffffff;
 }
 
-button.bg-orange-500:hover {
+/* 小程序中 button 的 hover 效果通过 hoverClass 属性实现 */
+/* button.bg-orange-500:hover {
   background-color: #ea580c;
-}
+} */
 
 button.text-orange-500 {
   background-color: transparent;
@@ -524,9 +572,10 @@ button.bg-green-500 {
   color: #ffffff;
 }
 
-button.bg-green-500:hover {
+/* 小程序中 button 的 hover 效果通过 hoverClass 属性实现 */
+/* button.bg-green-500:hover {
   background-color: #16a34a;
-}
+} */
 
 button.bg-gray-100 {
   background-color: #f3f4f6;
@@ -549,6 +598,17 @@ input:focus, textarea:focus {
 }
 
 /* 特殊样式 */
+/* 小程序 hover-class 样式 - 替换不起作用的 :hover 伪类 */
+.hover-bg-orange-600 {
+  background-color: #ea580c !important;
+}
+
+.hover-bg-green-600 {
+  background-color: #16a34a !important;
+}
+
+/* 移除不支持的 hover 伪类样式 */
+/* 
 .hover\:bg-orange-600:hover {
   background-color: #ea580c;
 }
@@ -556,3 +616,4 @@ input:focus, textarea:focus {
 .hover\:bg-green-600:hover {
   background-color: #16a34a;
 }
+*/

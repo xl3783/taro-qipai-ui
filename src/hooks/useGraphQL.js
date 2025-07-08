@@ -1,5 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import { graphqlClient, QUERIES, MUTATIONS } from '../graphql/client.js';
+import Taro from '@tarojs/taro';
+
+const graphqlQuery = async (query, variables) => {
+  console.log('graphqlQuery', query, variables);
+  const res = await Taro.request({
+    // url: "http://47.113.229.69:5000/graphql",
+    url: "http://localhost:15000/graphql",
+    method: "POST",
+    header: {
+      "Content-Type": "application/json",
+    },
+    data: {
+      query,
+      variables,
+    },
+  });
+  console.log('res', res);
+  return res; // 返回 GraphQL 的 data 字段
+}
 
 // 通用GraphQL查询hook
 export const useQuery = (query, variables = {}, options = {}) => {
@@ -11,13 +30,21 @@ export const useQuery = (query, variables = {}, options = {}) => {
     try {
       setLoading(true);
       setError(null);
-      const result = await graphqlClient.query(query, variables);
-      
-      if (result.errors) {
-        setError(result.errors[0]);
+      const result = await graphqlQuery(query, variables);
+
+      console.log('result', result);
+
+      if (result.statusCode === 200) {
+        setData(result.data.data);
       } else {
-        setData(result.data);
+        setError(result.data);
       }
+      
+      // if (result.errors) {
+      //   setError(result.errors[0]);
+      // } else {
+      //   setData(result.data);
+      // }
     } catch (err) {
       setError({ message: err.message });
     } finally {

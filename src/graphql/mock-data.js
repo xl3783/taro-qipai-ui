@@ -58,6 +58,17 @@ export const mockRooms = [
   },
 ];
 
+export const mockRoom = [
+  {
+    id: 'room-1',
+    name: '打牌记账 jyyj 房间',
+    hostId: '1',
+    status: 'ACTIVE',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
 export const mockTransactions = [
   {
     id: 'tx-1',

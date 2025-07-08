@@ -4,6 +4,8 @@
   "appid": "testAppId",
   "setting": {
     "es6": false,
-    "minified": false
+    "minified": false,
+    "urlCheck": false,
+    "compileHotReLoad": true
   }
 }

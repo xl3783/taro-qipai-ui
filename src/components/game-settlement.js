@@ -50,13 +50,13 @@ export default function GameSettlement({
   }
   return (
     <View className='min-h-screen bg-gray-50 p-4'>
-      <View className='max-w-md mx-auto space-y-6'>
+      <View className='max-w-md mx-auto flex flex-col gap-6'>
         <View className='flex items-center mb-6'>
           <Text className='w-6 h-6'>←</Text>
           <Text className='text-lg font-semibold ml-4'>打牌记账</Text>
         </View>
         <View className='text-center rounded-lg border bg-card text-card-foreground shadow-sm'>
-          <View className='p-6 flex flex-col space-y-1.5'>
+          <View className='p-6 flex flex-col gap-1_5'>
             <Text className='text-2xl text-orange-500 font-semibold'>战斗胜利</Text>
           </View>
           <View className='p-6 pt-0'>
@@ -66,7 +66,7 @@ export default function GameSettlement({
             <Text className='text-sm text-muted-foreground mb-4'>获得 大神 称号，今晚你买单！</Text>
             
             {settlementStrategy.length > 0 ? (
-              <View className='space-y-2'>
+              <View className='flex flex-col gap-2'>
                 <Text className='text-sm font-semibold text-gray-700 mb-2'>推荐结算方案:</Text>
                 {settlementStrategy.map((settlement, index) => (
                   <View key={index} className='bg-orange-50 p-3 rounded-lg'>
@@ -86,7 +86,7 @@ export default function GameSettlement({
             )}
           </View>
         </View>
-        <View className='space-y-3'>
+        <View className='flex flex-col gap-3'>
           <Button 
             onClick={handleGenerateStrategy} 
             disabled={loading}
@@ -99,7 +99,8 @@ export default function GameSettlement({
             <Button 
               onClick={handleSettleRoom} 
               disabled={loading}
-              className='bg-orange-500 hover:bg-orange-600'
+              className='bg-orange-500'
+              hoverClass="hover-bg-orange-600"
             >
               {loading ? '结算中...' : '执行房间结算'}
             </Button>
