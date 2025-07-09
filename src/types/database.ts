@@ -66,12 +66,12 @@ export interface TransferRecord {
 }
 
 export interface Score {
-  player_id: string;
-  current_total: number;
-  games_played: number;
-  games_won: number;
-  last_updated: Date;
-  games_lost: number;
+  playerId: string;
+  currentTotal: number;
+  gamesPlayed: number;
+  gamesWon: number;
+  lastUpdated: Date;
+  gamesLost: number;
 }
 
 // Extended interfaces with relationships

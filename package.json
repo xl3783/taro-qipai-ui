@@ -56,7 +56,8 @@
     "@tarojs/shared": "3.6.34",
     "@tarojs/taro": "3.6.34",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "graphql-ws": "^6.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.8.0",

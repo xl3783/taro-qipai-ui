@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { View, Button as TaroButton } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import PlayerAvatar from '../../components/player-avatar.js'
@@ -7,114 +6,45 @@ import SpendingLimitModal from '../../components/spending-limit-modal.js'
 import GameSettlement from '../../components/game-settlement.js'
 import TransferModal from '../../components/transfer-modal.js'
 import TransactionHistory from '../../components/transaction-history.js'
-import { useCurrentUser, useUsers, useRoom, useTransactions, useGameStats, useCreateTransaction } from '../../hooks/useGraphQL.js'
-import { useQuery } from '../../hooks/useGraphQL.js'
+import { useRoomViewModel } from '../../hooks/useRoomViewModel.ts'
 import './room.scss'
 
 export default function Room() {
   // 获取页面参数
   const router = Taro.getCurrentInstance().router
-  const roomId = router.params.roomId || '1afc3bd7-8087-4dcf-905d-1dcd60d858ae'
+  const roomId = router.params.roomId
+  const roomName = router.params.roomName
 
-  const GET_GAME_PARTICIPANTS = `
-  query GetGameParticipants($gameId: String!) {
-    allGameParticipants(condition: { gameId: $gameId }) {
-      nodes {
-        participationId,
-        playerId,
-        playerByPlayerId {
-          username
-          avatarUrl
-        }
-      }
-    }
-  }
-`;
-
-  const GET_PLAYER_TRANSACTIONS = `
-query GetPlayerTransactions($gameId: String!) {
-  allTransferRecords(condition: {gameId: $gameId}) {
-    nodes {
-      nodeId,
-      transferId,
-      fromPlayerId,
-      toPlayerId,
-      playerByFromPlayerId {
-        username,
-        avatarUrl
-      },
-      playerByToPlayerId {
-        username,
-         avatarUrl
-      }
-      points
-    }
-  }
-}`;
-
-  const { data: gameParticipantsData, loading: gameParticipantsLoading } = useQuery(GET_GAME_PARTICIPANTS, { gameId: roomId });
-  const { data: playerTransactionsData, loading: playerTransactionsLoading } = useQuery(GET_PLAYER_TRANSACTIONS, { gameId: roomId });
-
-  const [currentView, setCurrentView] = useState('room')
-  const [showProfileModal, setShowProfileModal] = useState(false)
-  const [showSpendingModal, setShowSpendingModal] = useState(false)
-  const [showTransferModal, setShowTransferModal] = useState(false)
-  const [currentRoomId] = useState(roomId)
-  const [choosePlayerProfile, setChoosePlayerProfile] = useState(null)
-  const [transactions, setTransactions] = useState([])
-
-  // 使用GraphQL hooks获取数据
-  const { data: currentUserData, loading: userLoading } = useCurrentUser()
-  const { data: usersData, loading: usersLoading, refetch: refetchUsers } = useUsers()
-  const { data: roomData, loading: roomLoading, refetch: refetchRoom } = useRoom(currentRoomId)
-  const { data: transactionsData, loading: transactionsLoading, refetch: refetchTransactions } = useTransactions(currentRoomId)
-  const [createTransaction] = useCreateTransaction()
-
-  const currentPlayer = {
-    playerId: "mock_openid_gp55mnaesqj",
-    username: "mock_nickname",
-    avatarUrl: null,
-  }
-
-  const roomPlayers = gameParticipantsData?.allGameParticipants?.nodes || []
-
-  useEffect(() => {
-    if (playerTransactionsData) {
-      const transactions = playerTransactionsData?.allTransferRecords?.nodes.map((node) => {
-        return {
-          id: node.nodeId,
-          fromPlayerId: node.fromPlayerId,
-          toPlayerId: node.toPlayerId,
-          fromPlayer: {
-            username: node.playerByFromPlayerId.username,
-            avatarUrl: node.playerByFromPlayerId.avatarUrl, 
-          },
-          toPlayer: {
-            username: node.playerByToPlayerId.username,
-            avatarUrl: node.playerByToPlayerId.avatarUrl,
-          },
-          points: node.points,
-        }
-      });
-      setTransactions(transactions);
-    }
-  }, [playerTransactionsData]);
-
-  const onChoosePlayer = (player) => {
-    setChoosePlayerProfile({
-      username: player.playerByPlayerId.username,
-      avatarUrl: player.playerByPlayerId.avatarUrl,
-      balance: 0,
-    });
-    setShowProfileModal(true);
-  }
-
-  const handleExitRoom = () => {
-    Taro.navigateBack()
-  }
+  // 使用 MVVM Hook
+  const {
+    // 状态
+    currentView,
+    showProfileModal,
+    showSpendingModal,
+    showTransferModal,
+    choosePlayerProfile,
+    transactions,
+    roomPlayers,
+    loading,
+    error,
+    
+    // 事件处理函数
+    handleChoosePlayer,
+    handleCloseProfileModal,
+    handleShowTransferModal,
+    handleCloseTransferModal,
+    handleTransfer,
+    handleSwitchToSettlement,
+    handleExitRoom,
+    clearError,
+    
+    // 获取数据的方法
+    getCurrentUser,
+    getPlayersForTransfer,
+  } = useRoomViewModel(roomId, roomName);
 
   // 数据加载状态
-  if (userLoading || usersLoading || roomLoading || transactionsLoading) {
+  if (loading) {
     return (
       <View className="min-h-screen bg-gray-50 flex items-center justify-center">
         <View className="text-lg">正在加载...</View>
@@ -122,16 +52,31 @@ query GetPlayerTransactions($gameId: String!) {
     )
   }
 
+  // 错误状态
+  if (error) {
+    return (
+      <View className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <View className="text-lg text-red-500">加载失败: {error}</View>
+        <TaroButton onClick={clearError} className="mt-4">重试</TaroButton>
+      </View>
+    )
+  }
+
   if (currentView === 'settlement') {
     return (
       <GameSettlement
-        totalScore={0}
+        roomId={roomId}
+        roomName={roomName}
+        participants={roomPlayers}
+        totalScore={roomPlayers.reduce((sum, player) => sum + (player.finalScore || 0), 0)}
         onGenerateStrategy={() => {}}
         onExitRoom={handleExitRoom}
         onViewSettlement={() => {}}
         onViewRanking={() => {}}
         onViewHistory={() => {}}
         onViewManual={() => {}}
+        onBackToRoom={handleSwitchToRoom}
+        onSettlement={handleSettlement}
       />
     )
   }
@@ -141,7 +86,7 @@ query GetPlayerTransactions($gameId: String!) {
       {/* Header */}
       <View className="bg-white border-b p-4 flex items-center justify-between">
         <View className="flex items-center gap-2">
-          <View className="text-lg font-semibold">打牌记账 2 房间</View>
+          <View className="text-lg font-semibold">房间: {roomName}</View>
         </View>
       </View>
       {/* Notice Bar */}
@@ -153,10 +98,10 @@ query GetPlayerTransactions($gameId: String!) {
         <View className="flex flex-wrap justify-center gap-4 mb-6">
           {roomPlayers.map((player) => (
             <View key={player.participationId} className="w-20 text-center">
-              <TaroButton onClick={() => onChoosePlayer(player)} className="flex flex-col items-center gap-2 w-full">
+              <TaroButton onClick={() => handleChoosePlayer(player)} className="flex flex-col items-center gap-2 w-full">
                 <PlayerAvatar name={player.playerByPlayerId.username} size="lg" />
                 <View className="text-xs font-medium truncate w-full">{player.playerByPlayerId.username}</View>
-                <View className="text-sm font-bold text-orange-500">¥0</View>
+                <View className="text-sm font-bold text-orange-500">¥{player.finalScore}</View>
               </TaroButton>
             </View>
           ))}
@@ -174,7 +119,7 @@ query GetPlayerTransactions($gameId: String!) {
         {/* Transfer Button */}
         <View className="flex justify-center mb-4">
           <TaroButton 
-            onClick={() => setShowTransferModal(true)} 
+            onClick={handleShowTransferModal} 
             className="bg-green-500 px-8"
             hoverClass="hover-bg-green-600"
           >
@@ -184,70 +129,39 @@ query GetPlayerTransactions($gameId: String!) {
         {/* Bottom Actions */}
         <View className="flex justify-center gap-4">
           <TaroButton 
-            onClick={() => setCurrentView('settlement')} 
+            onClick={handleSwitchToSettlement} 
             className="bg-orange-500"
             hoverClass="hover-bg-orange-600"
           >
             结算
           </TaroButton>
-          <TaroButton>客服</TaroButton>
+          {/* <TaroButton>客服</TaroButton> */}
           <TaroButton onClick={handleExitRoom}>退房</TaroButton>
         </View>
       </View>
       {/* Modals */}
       <PlayerProfileModal
         isOpen={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
+        onClose={handleCloseProfileModal}
         player={choosePlayerProfile}
         onUpdateNickname={() => {}}
         onExitRoom={handleExitRoom}
       />
       <SpendingLimitModal
         isOpen={showSpendingModal}
-        onClose={() => setShowSpendingModal(false)}
-        onConfirm={() => setShowSpendingModal(false)}
+        onClose={() => {}}
+        onConfirm={() => {}}
       />
       <TransferModal
         isOpen={showTransferModal}
-        onClose={() => setShowTransferModal(false)}
-        players={(roomPlayers || []).map(player => ({
+        onClose={handleCloseTransferModal}
+        players={roomPlayers.map(player => ({
           id: player.playerId,
           username: player.playerByPlayerId.username,
           avatarUrl: player.playerByPlayerId.avatarUrl
         }))}
-        currentPlayer={
-          {
-            id: currentPlayer.playerId,
-            username: currentPlayer.username,
-            avatarUrl: currentPlayer.avatarUrl
-          }
-        }
-        onTransfer={async (fromId, toId, amount, description) => {
-          try {
-            await createTransaction({
-              input: {
-                fromPlayerId: fromId,
-                toPlayerId: toId,
-                amount: parseFloat(amount),
-                description: description || '转账',
-                type: 'TRANSFER',
-                roomId: currentRoomId
-              }
-            })
-            
-            // 刷新数据
-            await Promise.all([
-              refetchUsers(),
-              refetchRoom(),
-              refetchTransactions()
-            ])
-            
-            setShowTransferModal(false)
-          } catch (error) {
-            console.error('转账失败:', error)
-            // 这里可以显示错误提示
-          }
-        }}
+        currentPlayer={getCurrentUser()}
+        onTransfer={handleTransfer}
       />
     </View>
   )

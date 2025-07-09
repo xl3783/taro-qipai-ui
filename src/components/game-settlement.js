@@ -4,9 +4,12 @@ import { View, Button, Text } from '@tarojs/components'
 import { useState, useEffect } from 'react'
 import { GameService } from '../services/gameService.js'
 import { useSettleRoom } from '../hooks/useGraphQL.js'
+import SettlementPage from './settlement-page.js'
 
 export default function GameSettlement({
   roomId = 'room-1', // 默认房间ID
+  roomName = '房间1',
+  participants = [],
   totalScore,
   onGenerateStrategy,
   onExitRoom,
@@ -14,10 +17,13 @@ export default function GameSettlement({
   onViewRanking,
   onViewHistory,
   onViewManual,
+  onBackToRoom,
+  onSettlement,
 }) {
   const [settlementStrategy, setSettlementStrategy] = useState([])
   const [settlementResults, setSettlementResults] = useState([])
   const [loading, setLoading] = useState(false)
+  const [showSettlementPage, setShowSettlementPage] = useState(false)
   const [settleRoom] = useSettleRoom()
 
   // 生成结算策略
@@ -42,12 +48,51 @@ export default function GameSettlement({
       setLoading(true)
       const results = await settleRoom({ roomId })
       setSettlementResults(results.settleRoom || [])
+      // 结算完成后显示结算页面
+      setShowSettlementPage(true)
     } catch (error) {
       console.error('房间结算失败:', error)
     } finally {
       setLoading(false)
     }
   }
+
+  // 查看结算结果
+  const handleViewSettlement = () => {
+    setShowSettlementPage(true)
+  }
+
+  // 返回房间
+  const handleBackToRoom = () => {
+    setShowSettlementPage(false)
+    if (onBackToRoom) {
+      onBackToRoom()
+    }
+  }
+
+  // 结算
+  const handleSettlement = () => {
+    setShowSettlementPage(false)
+    if (onSettlement) {
+      onSettlement()
+    }
+  }
+
+  // 如果显示结算页面，则渲染结算页面组件
+  if (showSettlementPage) {
+    return (
+      <SettlementPage
+        roomId={roomId}
+        roomName={roomName}
+        participants={participants}
+        onBackToRoom={handleBackToRoom}
+        onViewHistory={onViewHistory}
+        onViewManual={onViewManual}
+        onSettlement={handleSettlement}
+      />
+    )
+  }
+
   return (
     <View className='min-h-screen bg-gray-50 p-4'>
       <View className='max-w-md mx-auto flex flex-col gap-6'>
@@ -106,7 +151,7 @@ export default function GameSettlement({
             </Button>
           </View>
           <View className='grid grid-cols-2 gap-3'>
-            <Button onClick={onViewRanking} className='text-orange-500 border-orange-500'>总分排行榜</Button>
+            <Button onClick={handleViewSettlement} className='text-orange-500 border-orange-500'>查看结算结果</Button>
             <Button onClick={onViewHistory} className='text-orange-500 border-orange-500'>房间更多流水</Button>
           </View>
           <View className='grid grid-cols-2 gap-3'>

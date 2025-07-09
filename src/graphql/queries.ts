@@ -95,20 +95,18 @@ export const MORTGAGE_CALCULATION_UPDATED = gql`
 
 // 获取玩家信息
 export const GET_PLAYER_PROFILE = gql`
-  query GetPlayerProfile($playerId: ID!) {
-    playerByPlayerId(playerId: $playerId) {
-    avatarUrl
-    email
-    playerId
-    phone
-    username
+  query GetPlayerProfile($playerId: String!) {
+      playerByPlayerId(playerId: $playerId) {
     scoreByPlayerId {
       currentTotal
       gamesLost
       gamesPlayed
       gamesWon
-      playerId
     }
+    email
+    phone
+    playerId
+    username
   }
   }
 `;

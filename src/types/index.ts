@@ -21,7 +21,7 @@ export interface GameStats {
   totalPoints: number;
   wins: number;
   losses: number;
-  winRate: number;
+  winRate: string;
   friendRanking: number;
 }
 
@@ -52,6 +52,78 @@ export interface IndexPageState {
   showQRModal: boolean;
   isLoggingIn: boolean;
   loginData: LoginResponse | null;
+  roomId: string;
+}
+
+// Room 页面相关类型
+export interface GameParticipant {
+  participationId: string;
+  playerId: string;
+  finalScore: number;
+  playerByPlayerId: {
+    username: string;
+    avatarUrl?: string;
+  };
+}
+
+export interface TransferRecord {
+  nodeId: string;
+  transferId: string;
+  fromPlayerId: string;
+  toPlayerId: string;
+  playerByFromPlayerId: {
+    username: string;
+    avatarUrl?: string;
+  };
+  playerByToPlayerId: {
+    username: string;
+    avatarUrl?: string;
+  };
+  points: number;
+}
+
+export interface Transaction {
+  id: string;
+  fromPlayerId: string;
+  toPlayerId: string;
+  fromPlayer: {
+    username: string;
+    avatarUrl?: string;
+  };
+  toPlayer: {
+    username: string;
+    avatarUrl?: string;
+  };
+  points: number;
+}
+
+export interface PlayerProfile {
+  username: string;
+  avatarUrl?: string;
+  balance: number;
+}
+
+export interface RoomState {
+  roomId: string;
+  roomName: string;
+  currentView: 'room' | 'settlement';
+  showProfileModal: boolean;
+  showSpendingModal: boolean;
+  showTransferModal: boolean;
+  choosePlayerProfile: PlayerProfile | null;
+  transactions: Transaction[];
+  roomPlayers: GameParticipant[];
+  loading: boolean;
+  error: string | null;
+}
+
+export interface CreateTransactionInput {
+  fromPlayerId: string;
+  toPlayerId: string;
+  amount: number;
+  description: string;
+  type: string;
+  roomId: string;
 }
 
 // Export database types

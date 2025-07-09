@@ -1,6 +1,6 @@
 import Taro from "@tarojs/taro";
 import { restClient } from "../services/restClient.js";
-import { LoginResponse, UserInfo, WechatUserInfo, ApiResponse } from "../types/index";
+import { LoginResponse, UserInfo, WechatUserInfo } from "../types/index";
 
 export class IndexPageModel {
   /**
@@ -21,7 +21,14 @@ export class IndexPageModel {
 
       const loginResponse = response.data as LoginResponse;
       Taro.setStorageSync("token", loginResponse.token);
-      Taro.setStorageSync("userInfo", loginResponse.user);
+      // 将 LoginUser 转换为 UserInfo 格式存储
+      const userInfo: UserInfo = {
+        username: loginResponse.user.nickname,
+        avatarUrl: "",
+        playerId: loginResponse.user.id,
+      };
+      console.log("userInfo", userInfo);
+      Taro.setStorageSync("userInfo", userInfo);
 
       return response.data as LoginResponse;
     } catch (error) {
@@ -86,13 +93,19 @@ export class IndexPageModel {
    * 存储用户信息
    */
   async setUserInfo(userInfo: WechatUserInfo): Promise<void> {
-    await Taro.setStorageSync("userInfo", userInfo);
+    // 将 WechatUserInfo 转换为 UserInfo 格式存储
+    const appUserInfo: UserInfo = {
+      username: userInfo.nickName,
+      avatarUrl: userInfo.avatarUrl,
+      playerId: "unknown", // 微信用户信息中没有 playerId，需要从其他地方获取
+    };
+    await Taro.setStorageSync("userInfo", appUserInfo);
   }
 
   /**
    * 获取存储的用户信息
    */
-  async getStoredUserInfo(): Promise<WechatUserInfo | null> {
+  async getStoredUserInfo(): Promise<UserInfo | null> {
     try {
       return await Taro.getStorageSync("userInfo");
     } catch {

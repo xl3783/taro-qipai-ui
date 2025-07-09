@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { IndexPageModel } from "../models/IndexPageModel";
 import { IndexPageViewModel } from "../viewmodels/IndexPageViewModel";
-import { IndexPageState } from "../types/index";
+import { UserInfo } from "../types/index";
 
 export const useIndexPageViewModel = () => {
   const [state, setState] = useState({
-    userInfo: null,
+    userInfo: null as UserInfo | null,
     gameStats: {
       totalPoints: 0,
       wins: 0,
       losses: 0,
-      winRate: 0,
+      winRate: '--',
       friendRanking: 0,
     },
     showQRModal: false,
@@ -37,8 +37,8 @@ export const useIndexPageViewModel = () => {
     viewModel.handleCreateRoom();
   }, [viewModel]);
 
-  const handleJoinRoom = useCallback(() => {
-    viewModel.handleJoinRoom();
+  const handleJoinRoom = useCallback((roomName: string) => {
+    viewModel.handleJoinRoom(roomName);
   }, [viewModel]);
 
   const handleCloseQRModal = useCallback(() => {

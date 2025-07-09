@@ -1,7 +1,9 @@
 export default {
   pages: [
     'pages/index/index',
-    'pages/room/room'
+    'pages/room/room',
+    'pages/settlement-demo/settlement-demo',
+    'pages/game-history/game-history'
   ],
   window: {
     backgroundTextStyle: 'light',

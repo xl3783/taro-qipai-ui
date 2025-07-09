@@ -11,7 +11,6 @@ class MockGraphQLClient {
   // 执行查询
   async query(queryString, variables = {}) {
     try {
-      // debugger;
       console.log('queryString', queryString);
       console.log('variables', variables);
       const result = this.executeQuery(queryString, variables);

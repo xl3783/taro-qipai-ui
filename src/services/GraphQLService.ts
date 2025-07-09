@@ -1,4 +1,4 @@
-import { client } from '../graphql/client';
+import { client } from '../graphql/client2';
 import { 
   GET_MESSAGES, 
   ADD_MESSAGE, 
@@ -19,10 +19,10 @@ export interface Message {
 }
 
 export interface PlayerProfile {
-  player_id: string;
+  playerId: string;
   username: string;
   email: string;
-  avatar_url: string;
+  avatarUrl: string;
   phone: string;
   scoreInfo: Score
 }
@@ -46,20 +46,46 @@ export interface SubscriptionData {
   };
 }
 
+// 简单的GraphQL请求函数，使用Taro.request
+const simpleGraphQLRequest = async (query: string, variables: any = {}) => {
+  try {
+    const response = await Taro.request({
+      url: 'http://localhost:15000/graphql',
+      method: 'POST',
+      header: {
+        'Content-Type': 'application/json',
+      },
+      data: {
+        query,
+        variables,
+      },
+    });
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.data;
+    } else {
+      throw new Error(`GraphQL request failed: ${response.statusCode}`);
+    }
+  } catch (error) {
+    console.error('GraphQL request error:', error);
+    throw error;
+  }
+};
+
 export class GraphQLService {
 
   static async getPlayerProfile(): Promise<PlayerProfile> {
     // get player id from local storage
-    const playerId = Taro.getStorageSync('userInfo').id;
+    const playerId = Taro.getStorageSync('userInfo')?.playerId;
     if (!playerId) {
       throw new Error('not login');
     }
-    const { data } = await client.query({
-      query: GET_PLAYER_PROFILE,
-      variables: { playerId: playerId }
-    });
-    console.log(data);
-    return data as PlayerProfile;
+    
+    // 如果Apollo Client失败，使用直接请求
+    const result = await simpleGraphQLRequest(GET_PLAYER_PROFILE.loc?.source.body || '', { playerId });
+    const playerProfile = result.data.playerByPlayerId as PlayerProfile;
+    playerProfile.scoreInfo = result.data.playerByPlayerId.scoreByPlayerId as Score;
+    return playerProfile;
   }
 
   /**
