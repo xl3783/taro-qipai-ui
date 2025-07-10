@@ -21,53 +21,79 @@ export interface GameHistoryStats {
 }
 
 export class GameHistoryModel {
+
+  async getRoomIdsByUserId(): Promise<string[]> {
+    const token = Taro.getStorageSync("token");
+    if (!token) {
+      throw new Error("用户未登录");
+    }
+    const userInfo = Taro.getStorageSync("userInfo");
+    if (!userInfo) {
+      throw new Error("用户未登录");
+    }
+    const userId = userInfo.id;
+
+    const response = await Taro.request({
+      url: 'http://localhost:15000/graphql',
+      method: 'GET',
+      header: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      data: {
+        query: `
+          query GetRoomIdsByUserId {
+            allGameParticipantsList(condition: {playerId: "${userId}"}) {
+              gameId
+            }
+          }
+        `
+      }
+    });
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      const result = response.data;
+      const roomIds = result.data?.allGameParticipantsList || [];
+      return roomIds.map((room: any) => room.gameId);
+    } else {
+      throw new Error(`获取房间列表失败: ${response.statusCode}`);
+    }
+  }
+
   /**
    * 获取用户的历史房间列表
    */
   async getUserRooms(): Promise<GameHistoryRoom[]> {
     try {
+      const token = Taro.getStorageSync("token");
+      if (!token) {
+        throw new Error("用户未登录");
+      }
+
+
       const response = await Taro.request({
-        url: 'http://localhost:15000/graphql',
-        method: 'POST',
+        url: 'http://localhost:3000/api/games/list',
+        method: 'GET',
         header: {
           'Content-Type': 'application/json',
-        },
-        data: {
-          query: `
-            query GetUserRooms {
-              userRooms {
-                id
-                name
-                status
-                hostId
-                host {
-                  id
-                  name
-                }
-                players {
-                  id
-                }
-                totalAmount
-                createdAt
-                updatedAt
-              }
-            }
-          `
-        },
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
+        console.log("response.data", response)
         const result = response.data;
-        const rooms = result.data?.userRooms || [];
-        
+        const rooms = result || [];
+
         // 转换数据格式
+        // return this.getMockRooms();
         return rooms.map((room: any) => ({
-          id: room.id,
-          name: room.name,
+          id: room.gameId,
+          name: room.gameName,
           status: room.status,
           hostId: room.hostId,
-          hostName: room.host?.name || '未知',
-          playerCount: room.players?.length || 0,
+          hostName: room.hostName,
+          playerCount: room.participants?.length || 0,
           totalAmount: room.totalAmount || 0,
           createdAt: room.createdAt,
           updatedAt: room.updatedAt,
@@ -88,15 +114,15 @@ export class GameHistoryModel {
   async getGameStats(): Promise<GameHistoryStats> {
     try {
       const rooms = await this.getUserRooms();
-      
+
       const totalRooms = rooms.length;
       const activeRooms = rooms.filter(room => room.status === 'ACTIVE').length;
       const settledRooms = rooms.filter(room => room.status === 'SETTLED').length;
       const totalAmount = rooms.reduce((sum, room) => sum + room.totalAmount, 0);
-      
+
       // 简单的胜率计算（这里可以根据实际业务逻辑调整）
       const winRate = totalRooms > 0 ? (settledRooms / totalRooms) * 100 : 0;
-      
+
       return {
         totalRooms,
         activeRooms,
@@ -153,6 +179,83 @@ export class GameHistoryModel {
         totalAmount: 1500,
         createdAt: '2024-01-05T19:00:00Z',
         updatedAt: '2024-01-05T22:00:00Z',
+      },
+      {
+        id: 'room-4',
+        name: '新年第一局',
+        status: 'ACTIVE',
+        hostId: 'user-3',
+        hostName: '王五',
+        playerCount: 4,
+        totalAmount: 600,
+        createdAt: '2024-01-20T20:00:00Z',
+        updatedAt: '2024-01-20T21:15:00Z',
+      },
+      {
+        id: 'room-4',
+        name: '新年第一局',
+        status: 'ACTIVE',
+        hostId: 'user-3',
+        hostName: '王五',
+        playerCount: 4,
+        totalAmount: 600,
+        createdAt: '2024-01-20T20:00:00Z',
+        updatedAt: '2024-01-20T21:15:00Z',
+      },
+      {
+        id: 'room-4',
+        name: '新年第一局',
+        status: 'ACTIVE',
+        hostId: 'user-3',
+        hostName: '王五',
+        playerCount: 4,
+        totalAmount: 600,
+        createdAt: '2024-01-20T20:00:00Z',
+        updatedAt: '2024-01-20T21:15:00Z',
+      },
+      {
+        id: 'room-4',
+        name: '新年第一局',
+        status: 'ACTIVE',
+        hostId: 'user-3',
+        hostName: '王五',
+        playerCount: 4,
+        totalAmount: 600,
+        createdAt: '2024-01-20T20:00:00Z',
+        updatedAt: '2024-01-20T21:15:00Z',
+      },
+      {
+        id: 'room-4',
+        name: '新年第一局',
+        status: 'ACTIVE',
+        hostId: 'user-3',
+        hostName: '王五',
+        playerCount: 4,
+        totalAmount: 600,
+        createdAt: '2024-01-20T20:00:00Z',
+        updatedAt: '2024-01-20T21:15:00Z',
+      },
+      {
+        id: 'room-4',
+        name: '新年第一局',
+        status: 'ACTIVE',
+        hostId: 'user-3',
+        hostName: '王五',
+        playerCount: 4,
+        totalAmount: 600,
+        createdAt: '2024-01-20T20:00:00Z',
+        updatedAt: '2024-01-20T21:15:00Z',
+      },
+      {
+        id: 'room-4',
+        name: '新年第一局',
+        status: 'ACTIVE',
+        hostId: 'user-3',
+        hostName: '王五',
+        playerCount: 4,
+        totalAmount: 600,
+        createdAt: '2024-01-20T20:00:00Z',
+        updatedAt: '2024-01-20T21:15:00Z',
       },
       {
         id: 'room-4',

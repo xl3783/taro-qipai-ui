@@ -115,7 +115,7 @@ export class GameHistoryViewModel {
    * 格式化时间
    */
   formatTime(dateString: string): string {
-    const date = new Date(dateString);
+    const date = new Date(Number(dateString));
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));

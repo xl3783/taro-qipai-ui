@@ -42,32 +42,6 @@ export default function GameHistory() {
 
   return (
     <View className="min-h-screen bg-gray-50 game-history">
-      {/* Header */}
-      <View className="bg-white border-b p-4">
-        <View className="text-lg font-semibold text-center">战绩记录</View>
-      </View>
-
-      {/* Stats Section */}
-      <View className="bg-white p-4 mb-4">
-        <View className="grid grid-cols-2 gap-4">
-          <View className="text-center p-3 bg-orange-50 rounded-lg">
-            <View className="text-2xl font-bold text-orange-600">{stats.totalRooms}</View>
-            <View className="text-sm text-gray-600">总房间数</View>
-          </View>
-          <View className="text-center p-3 bg-green-50 rounded-lg">
-            <View className="text-2xl font-bold text-green-600">{stats.activeRooms}</View>
-            <View className="text-sm text-gray-600">进行中</View>
-          </View>
-          <View className="text-center p-3 bg-blue-50 rounded-lg">
-            <View className="text-2xl font-bold text-blue-600">{stats.settledRooms}</View>
-            <View className="text-sm text-gray-600">已结束</View>
-          </View>
-          <View className="text-center p-3 bg-purple-50 rounded-lg">
-            <View className="text-2xl font-bold text-purple-600">¥{stats.totalAmount}</View>
-            <View className="text-sm text-gray-600">总金额</View>
-          </View>
-        </View>
-      </View>
 
       {/* Room List */}
       <ScrollView 
